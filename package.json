@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "ts-node src/process.ts"
+    "start": "ts-node src/process.ts"
   },
   "keywords": [],
   "author": "",

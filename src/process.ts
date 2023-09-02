@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import xlsx from 'xlsx'
 import path from 'path'
-import axios from 'axios'
+import axios, { AxiosResponse } from 'axios'
 
 const API_HOST = process.env.API_HOST || ''
 const TENANT = process.env.TENANT || ''
@@ -27,9 +27,11 @@ function readExcel(): IDataToSave[] {
     const sheetToJson: Array<IDataPlanilha> = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNameList[0]])
 
     for (const acesso of sheetToJson) {
-        const cpf = acesso.CPF.toString().normalize('NFD').replace(/[^0-9]/g, '')
-        const name = acesso.Nome.toString().normalize('NFD').replace(/[^a-zA-Z0-9/ ]/g, '')
-        const password = acesso.Senha.toString()
+        const { CPF, Nome, Senha } = acesso
+        if (!CPF || !Nome || !Senha) continue
+        const cpf = CPF.toString().normalize('NFD').replace(/[^0-9]/g, '')
+        const name = Nome.toString().normalize('NFD').replace(/[^a-zA-Z0-9/ ]/g, '')
+        const password = Senha.toString()
         listAccess.push({
             cpf, name, password
         })
@@ -56,7 +58,11 @@ async function saveDatabase(dataToSave: IDataToSave[]) {
                 }
             )
         } catch (error) {
-            console.error(error)
+            if (axios.isAxiosError(error)) {
+                return error.response?.data
+            } else {
+                console.log(error)
+            }
         }
     }
 }
